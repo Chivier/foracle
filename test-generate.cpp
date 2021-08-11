@@ -30,5 +30,6 @@ int main() {
     }
 
     output_file << '\n';
+    output_file.close();
     return 0;
 }
