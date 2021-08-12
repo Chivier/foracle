@@ -1,10 +1,11 @@
 /*
  * @Author       : Chivier Humber
- * @Date         : 2021-08-11 22:52:25
+ * @Date         : 2021-08-12 11:28:23
  * @LastEditors  : Chivier Humber
- * @LastEditTime : 2021-08-12 17:17:15
+ * @LastEditTime : 2021-08-12 16:46:11
  * @Description  : file content
  */
+
 #include <chrono>
 #include <cstdio>
 #include <fstream>
@@ -111,20 +112,11 @@ std::vector<int> SplitResource() {
     return split;
 }
 
-void PrintTags(vector<int> const &tags, bool detailed=false) {
-    if (detailed) {
-        for (auto item : tags) {
-            cout << item << " ";
-        }
-        cout << endl;
-    } else {
-        int tag = 0;
-        for (auto item : tags) {
-            if (item == -1)
-                tag ++;
-        }
-        cout << "resources = " << tag << endl;
+void PrintTags(vector<int> const &tags) {
+    for (auto item : tags) {
+        cout << item << " ";
     }
+    cout << endl;
 }
 
 /**
@@ -183,7 +175,6 @@ void Arrange(std::vector<int> split) {
         for (int sub_index = 0; sub_index < gM; ++sub_index) {
             int tag = arrange_tag[sub_index];
             if (tag == -1) {
-                empty_resources++;
                 continue;
             }
             if (gTime[tag] + gTask[tag] / gPlan[tag] == time_select) {
@@ -191,43 +182,32 @@ void Arrange(std::vector<int> split) {
                 empty_resources++;
             }
         }
-        PrintTags(arrange_tag);
+
         while (empty_resources) {
             // Use all the empty_resources
             // Guess the resources for the next task
             double guess_time = ((double) total_time) / (index - 1);
             double guess_resource = gTask[index] / guess_time;
-            cout << "Deal : " << index << " amount = " << gTask[index] << "\n";
-            cout << "Guessing for " << guess_resource << endl;
             int resources_next = 0;
-            double guess_distance = std::numeric_limits<double>::max();
             for (int resource_index = gm - 1; resource_index >= 0; --resource_index) {
-                // Promise the usage of resources is legal
-                if (fabs(gResourcesPlan[resource_index] - guess_resource) <= guess_distance &&
-                gResourcesPlan[resource_index] <= empty_resources) {
-                    guess_distance = fabs(gResourcesPlan[resource_index] - guess_resource);
+                if (gResourcesPlan[resource_index] <= guess_resource) {
                     resources_next = gResourcesPlan[resource_index];
+                    break;
                 }
             }
-            
-            if (resources_next == 0) {
-                resources_next = gResourcesPlan[0];
-            }
-
-            total_time += gTask[index] / resources_next;
+            // Promise the usage of resources is legal
+            resources_next = min(resources_next, empty_resources);
             empty_resources -= resources_next;
+            total_time += gTask[index] / resources_next;
             gTime[index] = time_select;
             gPlan[index] = resources_next;
 
-            cout << "Give for " << resources_next << endl << endl;
             int tag_count = 0;
             for (int sub_index = 0; sub_index < gM; ++sub_index) {
                 if (arrange_tag[sub_index] == -1) {
                     arrange_tag[sub_index] = index;
                     tag_count++;
                 }
-                if (tag_count == resources_next)
-                    break;
             }
             index++;
 
@@ -240,8 +220,7 @@ void Arrange(std::vector<int> split) {
     int final_time = 0;
     int begin_time = std::numeric_limits<int>::max();
     double usage_rate = 0;
-    int final_index = -1;
-    
+
     for (int index = 0; index < gM; ++index) {
         int tag = arrange_tag[index];
         if (tag == -1) {
@@ -250,7 +229,6 @@ void Arrange(std::vector<int> split) {
         int end_time = gTime[tag] + gTask[tag] / gPlan[tag];
         if (end_time > final_time) {
             final_time = end_time;
-            final_index = tag;
         }
         if (end_time < begin_time) {
             begin_time = end_time;
@@ -261,7 +239,6 @@ void Arrange(std::vector<int> split) {
         int tag = arrange_tag[index];
         if (tag == -1) {
             usage_rate += (final_time - begin_time);
-            continue;
         }
         int end_time = gTime[tag] + gTask[tag] / gPlan[tag];
         usage_rate += (final_time - end_time);
@@ -273,10 +250,9 @@ void Arrange(std::vector<int> split) {
     
     cout << "Plan :" << endl;
     for (int index = 0; index < gN; ++index) {
-        cout << index << " task = "
-        << gTask[index] / gFactor << " begin time = "<< (double)gTime[index] / gFactor << "   resources = " << gPlan[index] << endl;
+        cout << index << " begin time = "<< (double)gTime[index] / gFactor << "   resources = " << gPlan[index] << endl;
     }
-    cout << "Final time = " << ((double) final_time) / gFactor << " final index = " << final_index << endl;
+    cout << "Final time = " << ((double) final_time) / gFactor << endl;
     cout << "Usage rate = " << usage_rate << " %" << endl;
 }
 

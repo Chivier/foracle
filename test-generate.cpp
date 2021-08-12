@@ -20,7 +20,7 @@ int main() {
                     .count());
 
     std::mt19937 gen(seed);
-    std::uniform_int_distribution<unsigned> distrib(1, 100);
+    std::uniform_int_distribution<unsigned> distrib(1, 6);
 
     ofstream output_file;
     output_file.open("file.txt");
