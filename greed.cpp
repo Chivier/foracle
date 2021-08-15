@@ -140,6 +140,7 @@ void PrintTags(vector<int> const &tags, bool detailed=false) {
  */
 void Arrange(std::vector<int> split) {
     int split_size = split.size();
+    double usage_rate = 0;
     vector<int> time_list(split_size, 0);
     vector<int> arrange_tag(gM, -1);
 
@@ -150,6 +151,7 @@ void Arrange(std::vector<int> split) {
     int start_tag_position = 0;
     for (int index = 0; index < min(split_size, gN); ++index) {
         time_list[index] = TimeEstimate(gTask[index], split[index]) + kInterval;
+        usage_rate += TimeEstimate(gTask[index], split[index]) * split[index] - gTime[index];
         gTime[index] = 0;
         gPlan[index] = split[index];
 
@@ -221,6 +223,7 @@ void Arrange(std::vector<int> split) {
             }
 
             total_time += TimeEstimate(gTask[index], resources_next);
+            usage_rate += TimeEstimate(gTask[index], resources_next) * resources_next - gTime[index];
             empty_resources -= resources_next;
             gTime[index] = time_select;
             gPlan[index] = resources_next;
@@ -245,7 +248,6 @@ void Arrange(std::vector<int> split) {
 
     int final_time = 0;
     int begin_time = std::numeric_limits<int>::max();
-    double usage_rate = 0;
     int final_index = -1;
     
     for (int index = 0; index < gM; ++index) {
