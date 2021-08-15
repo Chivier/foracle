@@ -40,6 +40,11 @@ int lcm(int a, int b) {
     return a * b / gcd(a, b);
 }
 
+inline int TimeEstimate(int u, int v) {
+    return (u - 1) / v + 1;
+}
+
+
 /**
  * @description: Read Config information
  * @param {*}
@@ -56,10 +61,10 @@ void ReadConfig() {
     }
     file.close();
     sort(gResourcesPlan.begin(), gResourcesPlan.begin() + gm, std::greater<int>());
-    gFactor = gResourcesPlan[0];
-    for (int index = 1; index < gm; ++index) {
-        gFactor = lcm(gFactor, gResourcesPlan[index]);
-    }
+    // gFactor = gResourcesPlan[0];
+    // for (int index = 1; index < gm; ++index) {
+    //     gFactor = lcm(gFactor, gResourcesPlan[index]);
+    // }
 }
 
 /**
@@ -74,10 +79,11 @@ void ReadTask() {
         for (int index = 0; index < gN; ++index) {
             file >> gTask[index];
             // Promise all the time interval is integer
-            gTask[index] *= gFactor;
+            // gTask[index] *= gFactor;
         }
     }
     file.close();
+    sort(gTask.begin(), gTask.begin() + gN, std::greater<int>());
 }
 
 /**
@@ -143,11 +149,11 @@ void Arrange(std::vector<int> split) {
     // First tuen is the same as intrinsic method
     int start_tag_position = 0;
     for (int index = 0; index < min(split_size, gN); ++index) {
-        time_list[index] = gTask[index] / split[index] + kInterval;
+        time_list[index] = TimeEstimate(gTask[index], split[index]) + kInterval;
         gTime[index] = 0;
         gPlan[index] = split[index];
 
-        total_time += gTask[index] / split[index];
+        total_time += TimeEstimate(gTask[index], split[index]);
         // Place the tag on the corresponding places
         for (int sub_index = start_tag_position; sub_index < start_tag_position + split[index]; ++sub_index) {
             arrange_tag[sub_index] = index;
@@ -171,7 +177,7 @@ void Arrange(std::vector<int> split) {
             if (tag == -1) {
                 continue;
             }
-            int end_time = gTime[tag] + gTask[tag] / gPlan[tag];
+            int end_time = gTime[tag] + TimeEstimate(gTask[tag], gPlan[tag]);
             if (end_time < time_select) {
                 time_select = end_time;
                 flag_index = tag;
@@ -186,7 +192,7 @@ void Arrange(std::vector<int> split) {
                 empty_resources++;
                 continue;
             }
-            if (gTime[tag] + gTask[tag] / gPlan[tag] == time_select) {
+            if (gTime[tag] + TimeEstimate(gTask[tag], gPlan[tag]) == time_select) {
                 arrange_tag[sub_index] = -1;
                 empty_resources++;
             }
@@ -214,7 +220,7 @@ void Arrange(std::vector<int> split) {
                 resources_next = gResourcesPlan[0];
             }
 
-            total_time += gTask[index] / resources_next;
+            total_time += TimeEstimate(gTask[index], resources_next);
             empty_resources -= resources_next;
             gTime[index] = time_select;
             gPlan[index] = resources_next;
@@ -247,7 +253,7 @@ void Arrange(std::vector<int> split) {
         if (tag == -1) {
             continue;
         }
-        int end_time = gTime[tag] + gTask[tag] / gPlan[tag];
+        int end_time = gTime[tag] + TimeEstimate(gTask[tag], gPlan[tag]);
         if (end_time > final_time) {
             final_time = end_time;
             final_index = tag;
@@ -263,7 +269,7 @@ void Arrange(std::vector<int> split) {
             usage_rate += (final_time - begin_time);
             continue;
         }
-        int end_time = gTime[tag] + gTask[tag] / gPlan[tag];
+        int end_time = gTime[tag] + TimeEstimate(gTask[tag], gPlan[tag]);
         usage_rate += (final_time - end_time);
     }
 
@@ -274,9 +280,9 @@ void Arrange(std::vector<int> split) {
     cout << "Plan :" << endl;
     for (int index = 0; index < gN; ++index) {
         cout << index << " task = "
-        << gTask[index] / gFactor << " begin time = "<< (double)gTime[index] / gFactor << "   resources = " << gPlan[index] << endl;
+        << gTask[index] << " begin time = "<< gTime[index] << "   resources = " << gPlan[index] << endl;
     }
-    cout << "Final time = " << ((double) final_time) / gFactor << " final index = " << final_index << endl;
+    cout << "Final time = " << final_time << " final index = " << final_index << endl;
     cout << "Usage rate = " << usage_rate << " %" << endl;
 }
 
