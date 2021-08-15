@@ -113,7 +113,7 @@ void Arrange(std::vector<int> split) {
 
     for (int index = 0; index < min(split_size, gN); ++index) {
         time_list[index] = TimeEstimate(gTask[index], split[index]) + kInterval;
-        usage_rate += TimeEstimate(gTask[index], split[index]) * split[index] - gTime[index];
+        usage_rate += TimeEstimate(gTask[index], split[index]) * split[index] - gTask[index];
         gTime[index] = 0;
         gPlan[index] = split[index];
     }
@@ -132,7 +132,7 @@ void Arrange(std::vector<int> split) {
         // Arrange the index-th task
         gTime[index] = time_list[flag_index];
         time_list[flag_index] += TimeEstimate(gTask[index], split[flag_index]) + kInterval;
-        usage_rate += TimeEstimate(gTask[index], split[flag_index]) * split[flag_index] - gTime[index];
+        usage_rate += TimeEstimate(gTask[index], split[flag_index]) * split[flag_index] - gTask[index];
         gPlan[index] = split[flag_index];
     }
 
